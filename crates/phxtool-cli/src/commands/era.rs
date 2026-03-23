@@ -3,7 +3,8 @@
 use std::path::PathBuf;
 
 use clap::Subcommand;
-use phxtool::era_ops;
+use phxtool::ops::era;
+use phxtool::ops::util;
 
 #[derive(Subcommand)]
 pub enum EraCommand {
@@ -26,6 +27,12 @@ pub enum EraCommand {
         /// Only dump a listing file
         #[arg(long)]
         listing_only: bool,
+        /// Decompress Scaleform UI files (.gfx/.swf) to .bin
+        #[arg(long)]
+        decompress_ui: bool,
+        /// Convert GFX files to SWF (header swap)
+        #[arg(long)]
+        gfx_to_swf: bool,
     },
     /// Build an ERA archive from a directory
     Build {
@@ -78,21 +85,25 @@ pub fn run(cmd: EraCommand) -> Result<(), Box<dyn std::error::Error>> {
             no_translate,
             no_overwrite,
             listing_only,
+            decompress_ui,
+            gfx_to_swf,
         } => {
             let outdir = output.unwrap_or_else(|| {
                 let stem = file.file_stem().unwrap_or_default();
                 PathBuf::from(stem)
             });
 
-            let opts = era_ops::ExpandOptions {
+            let opts = era::ExpandOptions {
                 translate_xmb: !no_translate,
                 overwrite: !no_overwrite,
                 listing_only,
                 filter,
+                decompress_ui,
+                gfx_to_swf,
             };
 
             println!("Expanding {} -> {}", file.display(), outdir.display());
-            let result = era_ops::expand(&file, &outdir, &opts)?;
+            let result = era::expand(&file, &outdir, &opts)?;
 
             println!(
                 "Extracted {} files ({} XMB→XML translations)",
@@ -112,18 +123,18 @@ pub fn run(cmd: EraCommand) -> Result<(), Box<dyn std::error::Error>> {
             no_translate,
             no_encrypt,
         } => {
-            let opts = era_ops::BuildOptions {
+            let opts = era::BuildOptions {
                 translate_xml: !no_translate,
                 encrypt: !no_encrypt,
             };
 
             println!("Building {} from {}", output.display(), input.display());
-            let count = era_ops::build(&input, &output, &opts)?;
+            let count = era::build(&input, &output, &opts)?;
             println!("Done! {} files archived.", count);
         }
 
         EraCommand::List { file } => {
-            let entries = era_ops::list(&file)?;
+            let entries = era::list(&file)?;
             println!("Files in {}:\n", file.display());
             let max_name = entries
                 .iter()
@@ -154,8 +165,8 @@ pub fn run(cmd: EraCommand) -> Result<(), Box<dyn std::error::Error>> {
                 println!(
                     "{:>5}  {:>10}  {:>12}  {:<width$}",
                     e.index,
-                    era_ops::format_size(e.compressed_size as u64),
-                    era_ops::format_size(e.decompressed_size as u64),
+                    util::format_size(e.compressed_size as u64),
+                    util::format_size(e.decompressed_size as u64),
                     name,
                     width = max_name
                 );
@@ -164,18 +175,18 @@ pub fn run(cmd: EraCommand) -> Result<(), Box<dyn std::error::Error>> {
         }
 
         EraCommand::Info { file } => {
-            let info = era_ops::info(&file)?;
+            let info = era::info(&file)?;
             println!("Archive: {}", file.display());
             println!("  ECF Magic:    0x{:08X}", info.ecf_magic);
             println!("  ERA Magic:    0x{:08X}", info.archive_magic);
             println!("  Files:        {}", info.file_count);
             println!(
                 "  Compressed:   {}",
-                era_ops::format_size(info.total_compressed)
+                util::format_size(info.total_compressed)
             );
             println!(
                 "  Decompressed: {}",
-                era_ops::format_size(info.total_decompressed)
+                util::format_size(info.total_decompressed)
             );
             if info.total_decompressed > 0 {
                 let ratio = (info.total_compressed as f64 / info.total_decompressed as f64) * 100.0;
@@ -185,13 +196,13 @@ pub fn run(cmd: EraCommand) -> Result<(), Box<dyn std::error::Error>> {
 
         EraCommand::Decrypt { input, output } => {
             println!("Decrypting {} -> {}", input.display(), output.display());
-            era_ops::decrypt(&input, &output)?;
+            era::decrypt(&input, &output)?;
             println!("Done!");
         }
 
         EraCommand::Encrypt { input, output } => {
             println!("Encrypting {} -> {}", input.display(), output.display());
-            era_ops::encrypt(&input, &output)?;
+            era::encrypt(&input, &output)?;
             println!("Done!");
         }
     }

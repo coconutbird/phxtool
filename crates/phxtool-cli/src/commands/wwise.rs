@@ -3,7 +3,7 @@
 use std::path::PathBuf;
 
 use clap::Subcommand;
-use phxtool::wwise_ops::{self, PckEntryKind};
+use phxtool::ops::wwise::{self, PckEntryKind};
 
 #[derive(Subcommand)]
 pub enum WwiseCommand {
@@ -33,7 +33,7 @@ pub enum WwiseCommand {
         #[arg(short, long)]
         output: Option<PathBuf>,
         /// Only extract a specific source ID (hex or decimal).
-        #[arg(long, value_parser = wwise_ops::parse_id)]
+        #[arg(long, value_parser = wwise::parse_id)]
         id: Option<u32>,
     },
 }
@@ -71,7 +71,7 @@ fn run_info(file: &std::path::Path) -> BoxResult<()> {
 
     match ext.as_str() {
         "pck" => {
-            let info = wwise_ops::pck_info(&mmap)?;
+            let info = wwise::pck_info(&mmap)?;
             println!("PCK File Info");
             println!("─────────────────────────────────");
             println!("Languages:        {}", info.language_count);
@@ -87,7 +87,7 @@ fn run_info(file: &std::path::Path) -> BoxResult<()> {
             println!("External data:    {} bytes", info.total_external_bytes);
         }
         "bnk" => {
-            let info = wwise_ops::bnk_info(&mmap)?;
+            let info = wwise::bnk_info(&mmap)?;
             println!("BNK File Info");
             println!("─────────────────────────────────");
             println!("Version:          0x{:X}", info.version);
@@ -120,7 +120,7 @@ fn run_list(file: &std::path::Path, streaming: bool, external: bool) -> BoxResul
         PckEntryKind::Banks
     };
 
-    let entries = wwise_ops::pck_list(&mmap, kind)?;
+    let entries = wwise::pck_list(&mmap, kind)?;
     println!("{:<18} {:<10} {:<10} Block", "ID", "Size", "Language");
     println!("{}", "─".repeat(56));
     for e in &entries {
@@ -147,8 +147,8 @@ fn run_dump(
     let out_dir = output.unwrap_or_else(|| PathBuf::from(format!("{stem}_extracted")));
 
     let result = match ext.as_str() {
-        "pck" => wwise_ops::dump_pck(&mmap, &out_dir, filter_id)?,
-        "bnk" => wwise_ops::dump_bnk(&mmap, &out_dir, filter_id)?,
+        "pck" => wwise::dump_pck(&mmap, &out_dir, filter_id)?,
+        "bnk" => wwise::dump_bnk(&mmap, &out_dir, filter_id)?,
         _ => {
             return Err(Box::new(phxtool::Error::InvalidFormat(format!(
                 "unsupported extension '.{ext}' (expected .pck or .bnk)"

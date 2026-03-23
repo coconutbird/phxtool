@@ -21,6 +21,10 @@ pub struct ExpandOptions {
     pub listing_only: bool,
     /// Glob pattern to filter files.
     pub filter: Option<String>,
+    /// Decompress Scaleform UI files (`.gfx`/`.swf`) to `.bin`.
+    pub decompress_ui: bool,
+    /// Convert GFX files to SWF (header swap).
+    pub gfx_to_swf: bool,
 }
 
 impl Default for ExpandOptions {
@@ -30,6 +34,8 @@ impl Default for ExpandOptions {
             overwrite: true,
             listing_only: false,
             filter: None,
+            decompress_ui: false,
+            gfx_to_swf: false,
         }
     }
 }
@@ -192,6 +198,45 @@ pub fn expand(path: &Path, output: &Path, opts: &ExpandOptions) -> Result<Expand
             }
         }
 
+        // Scaleform processing
+        if super::scaleform::is_scaleform_extension(&normalized) {
+            if opts.decompress_ui && super::scaleform::is_scaleform(&data) {
+                match super::scaleform::decompress_scaleform(&data) {
+                    Ok(decompressed) => {
+                        let bin_path = file_path.with_extension(format!(
+                            "{}.bin",
+                            file_path.extension().unwrap_or_default().to_string_lossy()
+                        ));
+                        fs::write(&bin_path, decompressed)?;
+                        result.files_extracted += 1;
+                    }
+                    Err(e) => {
+                        result
+                            .errors
+                            .push((filename.clone(), format!("decompress: {e}")));
+                    }
+                }
+            }
+
+            if opts.gfx_to_swf
+                && super::scaleform::is_scaleform(&data)
+                && !super::scaleform::is_swf_header(&data)
+            {
+                match super::scaleform::gfx_to_swf(&data) {
+                    Ok(swf_data) => {
+                        let swf_path = file_path.with_extension("swf");
+                        fs::write(&swf_path, swf_data)?;
+                        result.files_extracted += 1;
+                    }
+                    Err(e) => {
+                        result
+                            .errors
+                            .push((filename.clone(), format!("gfx→swf: {e}")));
+                    }
+                }
+            }
+        }
+
         fs::write(&file_path, &data)?;
         result.files_extracted += 1;
     }
@@ -342,19 +387,5 @@ pub fn encrypt(input: &Path, output: &Path) -> Result<()> {
     Ok(())
 }
 
-/// Format byte size as human-readable string.
-pub fn format_size(bytes: u64) -> String {
-    const KB: u64 = 1024;
-    const MB: u64 = 1024 * KB;
-    const GB: u64 = 1024 * MB;
-
-    if bytes >= GB {
-        format!("{:.1} GB", bytes as f64 / GB as f64)
-    } else if bytes >= MB {
-        format!("{:.1} MB", bytes as f64 / MB as f64)
-    } else if bytes >= KB {
-        format!("{:.1} KB", bytes as f64 / KB as f64)
-    } else {
-        format!("{} B", bytes)
-    }
-}
+// Re-export for backward compat
+pub use super::util::format_size;

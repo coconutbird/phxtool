@@ -536,6 +536,7 @@ dependencies = [
  "ddx",
  "ecf",
  "era",
+ "flate2",
  "glob",
  "pcktool",
  "thiserror",

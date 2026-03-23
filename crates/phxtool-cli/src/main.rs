@@ -3,10 +3,7 @@
 //! A Rust reimplementation of KornnerStudios' PhxTool, providing commands
 //! for ERA archives, XMB/XML conversion, and UGX model operations.
 
-mod cmd_era;
-mod cmd_ugx;
-mod cmd_wwise;
-mod cmd_xmb;
+mod commands;
 
 use clap::{Parser, Subcommand};
 
@@ -29,29 +26,44 @@ struct Cli {
 enum Commands {
     /// ERA archive operations (expand, build, list, info, decrypt, encrypt)
     #[command(subcommand)]
-    Era(cmd_era::EraCommand),
+    Era(commands::era::EraCommand),
 
     /// XMB ↔ XML conversion operations
     #[command(subcommand)]
-    Xmb(cmd_xmb::XmbCommand),
+    Xmb(commands::xmb::XmbCommand),
 
     /// UGX model operations (info, glTF export/import)
     #[command(subcommand)]
-    Ugx(cmd_ugx::UgxCommand),
+    Ugx(commands::ugx::UgxCommand),
 
     /// Wwise audio operations (info, list, dump/extract)
     #[command(subcommand)]
-    Wwise(cmd_wwise::WwiseCommand),
+    Wwise(commands::wwise::WwiseCommand),
+
+    /// ECF container operations (expand, build, info)
+    #[command(subcommand)]
+    Ecf(commands::ecf::EcfCommand),
+
+    /// BinaryDataTree operations (info, to-xml, to-bdt)
+    #[command(subcommand)]
+    Bdt(commands::bdt::BdtCommand),
+
+    /// Scaleform GFX ↔ SWF operations (to-swf, to-gfx, decompress, info)
+    #[command(subcommand)]
+    Gfx(commands::gfx::GfxCommand),
 }
 
 fn main() {
     let cli = Cli::parse();
 
     let result = match cli.command {
-        Commands::Era(cmd) => cmd_era::run(cmd),
-        Commands::Xmb(cmd) => cmd_xmb::run(cmd),
-        Commands::Ugx(cmd) => cmd_ugx::run(cmd),
-        Commands::Wwise(cmd) => cmd_wwise::run(cmd),
+        Commands::Era(cmd) => commands::era::run(cmd),
+        Commands::Xmb(cmd) => commands::xmb::run(cmd),
+        Commands::Ugx(cmd) => commands::ugx::run(cmd),
+        Commands::Wwise(cmd) => commands::wwise::run(cmd),
+        Commands::Ecf(cmd) => commands::ecf::run(cmd),
+        Commands::Bdt(cmd) => commands::bdt::run(cmd),
+        Commands::Gfx(cmd) => commands::gfx::run(cmd),
     };
 
     if let Err(e) = result {

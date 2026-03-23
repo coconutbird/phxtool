@@ -3,7 +3,7 @@
 use std::path::PathBuf;
 
 use clap::Subcommand;
-use phxtool::ugx_ops;
+use phxtool::ops::ugx;
 
 #[derive(Subcommand)]
 pub enum UgxCommand {
@@ -42,7 +42,7 @@ pub enum UgxCommand {
 pub fn run(cmd: UgxCommand) -> Result<(), Box<dyn std::error::Error>> {
     match cmd {
         UgxCommand::Info { input } => {
-            let info = ugx_ops::info(&input)?;
+            let info = ugx::info(&input)?;
             println!("UGX File: {}", input.display());
             println!("  Materials:  {}", info.materials);
             println!("  Bones:      {}", info.bones);
@@ -57,12 +57,12 @@ pub fn run(cmd: UgxCommand) -> Result<(), Box<dyn std::error::Error>> {
             external_buffer,
             no_skeleton,
         } => {
-            let opts = ugx_ops::ExportOptions {
+            let opts = ugx::ExportOptions {
                 external_buffer,
                 include_skeleton: !no_skeleton,
             };
             println!("Converting {} -> {}", input.display(), output.display());
-            ugx_ops::to_gltf(&input, &output, &opts)?;
+            ugx::to_gltf(&input, &output, &opts)?;
             println!("Done!");
         }
 
@@ -72,7 +72,7 @@ pub fn run(cmd: UgxCommand) -> Result<(), Box<dyn std::error::Error>> {
             no_skeleton,
         } => {
             println!("Converting {} -> {}", input.display(), output.display());
-            ugx_ops::from_gltf(&input, &output, !no_skeleton)?;
+            ugx::from_gltf(&input, &output, !no_skeleton)?;
             println!("Done!");
         }
     }

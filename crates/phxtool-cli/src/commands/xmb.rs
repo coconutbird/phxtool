@@ -3,7 +3,7 @@
 use std::path::PathBuf;
 
 use clap::{Subcommand, ValueEnum};
-use phxtool::xmb_ops;
+use phxtool::ops::xmb;
 
 #[derive(Subcommand)]
 pub enum XmbCommand {
@@ -44,11 +44,11 @@ pub enum FormatArg {
     Xbox360,
 }
 
-impl From<FormatArg> for phxtool::xmb_ops::Format {
+impl From<FormatArg> for phxtool::ops::xmb::Format {
     fn from(arg: FormatArg) -> Self {
         match arg {
-            FormatArg::Pc => phxtool::xmb_ops::Format::PC,
-            FormatArg::Xbox360 => phxtool::xmb_ops::Format::Xbox360,
+            FormatArg::Pc => phxtool::ops::xmb::Format::PC,
+            FormatArg::Xbox360 => phxtool::ops::xmb::Format::Xbox360,
         }
     }
 }
@@ -58,7 +58,7 @@ pub fn run(cmd: XmbCommand) -> Result<(), Box<dyn std::error::Error>> {
         XmbCommand::ToXml { input, output } => {
             let output = output.unwrap_or_else(|| input.with_extension("xml"));
             println!("Converting {} -> {}", input.display(), output.display());
-            xmb_ops::to_xml(&input, &output)?;
+            xmb::to_xml(&input, &output)?;
             println!("Done!");
         }
 
@@ -76,12 +76,12 @@ pub fn run(cmd: XmbCommand) -> Result<(), Box<dyn std::error::Error>> {
                 format,
                 if no_compress { ", uncompressed" } else { "" }
             );
-            xmb_ops::to_xmb(&input, &output, format.into(), !no_compress)?;
+            xmb::to_xmb(&input, &output, format.into(), !no_compress)?;
             println!("Done!");
         }
 
         XmbCommand::Info { input } => {
-            let info = xmb_ops::info(&input)?;
+            let info = xmb::info(&input)?;
             println!("File: {}", input.display());
             println!("Format: {:?}", info.format);
             if let Some(root) = &info.root_element {
