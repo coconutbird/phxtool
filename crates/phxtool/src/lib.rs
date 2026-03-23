@@ -1,14 +1,13 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+//! phxtool — high-level operations for Halo Wars game assets.
+//!
+//! Provides orchestration logic on top of the `ensemble-formats` crates
+//! (era, xmb, ugx, ddx, ecf, etc.) to implement the workflows found in
+//! KornnerStudios' PhxTool.
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+pub mod era_ops;
+pub mod ugx_ops;
+pub mod wwise_ops;
+pub mod xmb_ops;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+mod error;
+pub use error::{Error, Result};

@@ -4,4 +4,13 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
-ensemble-formats = { git = "https://github.com/coconutbird/ensemble-formats.git" }
+era = { git = "https://github.com/coconutbird/ensemble-formats.git" }
+ecf = { git = "https://github.com/coconutbird/ensemble-formats.git" }
+xmb = { git = "https://github.com/coconutbird/ensemble-formats.git" }
+ugx = { git = "https://github.com/coconutbird/ensemble-formats.git" }
+ddx = { git = "https://github.com/coconutbird/ensemble-formats.git" }
+xml = { git = "https://github.com/coconutbird/ensemble-formats.git" }
+bdt = { git = "https://github.com/coconutbird/ensemble-formats.git" }
+thiserror = "2.0"
+glob = "0.3"
+pcktool = { git = "https://github.com/coconutbird/pcktool-rs.git", version = "0.1.0" }
