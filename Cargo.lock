@@ -85,7 +85,7 @@ checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 [[package]]
 name = "bdt"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#4987a28f79bf25cbf93233f0da7e812aa7698776"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#0e09649f75605268115e48fa5057965d562488f1"
 dependencies = [
  "hashbrown 0.16.1",
  "thiserror",
@@ -239,7 +239,7 @@ dependencies = [
 [[package]]
 name = "ddx"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#4987a28f79bf25cbf93233f0da7e812aa7698776"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#0e09649f75605268115e48fa5057965d562488f1"
 dependencies = [
  "ecf",
  "miniz_oxide",
@@ -261,7 +261,7 @@ dependencies = [
 [[package]]
 name = "ecf"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#4987a28f79bf25cbf93233f0da7e812aa7698776"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#0e09649f75605268115e48fa5057965d562488f1"
 dependencies = [
  "miniz_oxide",
  "thiserror",
@@ -283,7 +283,7 @@ checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
 [[package]]
 name = "era"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#4987a28f79bf25cbf93233f0da7e812aa7698776"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#0e09649f75605268115e48fa5057965d562488f1"
 dependencies = [
  "ecf",
  "miniz_oxide",
@@ -740,7 +740,7 @@ checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
 [[package]]
 name = "ugx"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#4987a28f79bf25cbf93233f0da7e812aa7698776"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#0e09649f75605268115e48fa5057965d562488f1"
 dependencies = [
  "base64 0.22.1",
  "bdt",
@@ -796,7 +796,7 @@ dependencies = [
 [[package]]
 name = "xmb"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#4987a28f79bf25cbf93233f0da7e812aa7698776"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#0e09649f75605268115e48fa5057965d562488f1"
 dependencies = [
  "bdt",
  "ecf",
@@ -808,7 +808,7 @@ dependencies = [
 [[package]]
 name = "xml"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#4987a28f79bf25cbf93233f0da7e812aa7698776"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#0e09649f75605268115e48fa5057965d562488f1"
 dependencies = [
  "xmlparser",
 ]
