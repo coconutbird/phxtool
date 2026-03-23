@@ -1,0 +1,8 @@
+[package]
+name = "phxtool-cli"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+clap = { version = "4.6.0", features = ["derive"] }
+phxtool = { path = "../phxtool" }

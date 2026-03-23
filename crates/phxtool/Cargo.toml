@@ -1,0 +1,7 @@
+[package]
+name = "phxtool"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+ensemble-formats = { git = "https://github.com/coconutbird/ensemble-formats.git" }

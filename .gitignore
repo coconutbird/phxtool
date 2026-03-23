@@ -1,0 +1,27 @@
+# Build artifacts
+/target
+**/*.rs.bk
+
+# Cargo lock for library crates (keep for workspace with binary)
+# Cargo.lock is committed for binaries
+
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.*
+
+# Debug
+*.pdb
+
+# Coverage
+*.profraw
+*.profdata
+lcov.info
+tarpaulin-report.html
