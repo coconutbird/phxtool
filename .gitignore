@@ -2,6 +2,11 @@
 /target
 **/*.rs.bk
 
+# Extracted game assets (test data)
+/root/
+/root_*.era
+*.era
+
 # Cargo lock for library crates (keep for workspace with binary)
 # Cargo.lock is committed for binaries
 
