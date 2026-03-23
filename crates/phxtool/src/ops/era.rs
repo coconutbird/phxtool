@@ -186,7 +186,7 @@ pub fn expand(path: &Path, output: &Path, opts: &ExpandOptions) -> Result<Expand
             match xmb::Reader::read(&data) {
                 Ok(doc) => {
                     let xml = doc.to_xml();
-                    let xml_path = file_path.with_extension("xml");
+                    let xml_path = super::xmb::xmb_to_xml_path(&file_path);
                     fs::write(&xml_path, xml)?;
                     result.files_translated += 1;
                     result.files_extracted += 1;

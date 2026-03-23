@@ -70,7 +70,7 @@ impl From<FormatArg> for phxtool::ops::xmb::Format {
 pub fn run(cmd: XmbCommand) -> Result<(), Box<dyn std::error::Error>> {
     match cmd {
         XmbCommand::ToXml { input, output } => {
-            let output = output.unwrap_or_else(|| input.with_extension("xml"));
+            let output = output.unwrap_or_else(|| xmb::xmb_to_xml_path(&input));
             println!("Converting {} -> {}", input.display(), output.display());
             xmb::to_xml(&input, &output)?;
             println!("Done!");

@@ -4,7 +4,7 @@
 
 # Extracted game assets (test data)
 /root/
-/root_*.era
+/root_*/
 *.era
 
 # Cargo lock for library crates (keep for workspace with binary)

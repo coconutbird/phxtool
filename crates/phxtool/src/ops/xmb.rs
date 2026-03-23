@@ -116,9 +116,9 @@ pub fn batch_convert(
             }
             "xmb" => {
                 let out = if overwrite {
-                    file.with_extension("xml")
+                    xmb_to_xml_path(file)
                 } else {
-                    unique_path(&file.with_extension("xml"))
+                    unique_path(&xmb_to_xml_path(file))
                 };
                 to_xml(file, &out)
             }
@@ -135,6 +135,16 @@ pub fn batch_convert(
     }
 
     (success, errors)
+}
+
+/// Derive the XML output path for a `.xmb` input.
+pub fn xmb_to_xml_path(path: &Path) -> std::path::PathBuf {
+    let s = path.to_string_lossy().to_lowercase();
+    if s.ends_with(".xml.xmb") {
+        path.with_extension("") // strip .xmb, keeping .xml
+    } else {
+        path.with_extension("xml")
+    }
 }
 
 fn unique_path(path: &Path) -> std::path::PathBuf {
