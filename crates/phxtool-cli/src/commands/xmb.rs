@@ -34,6 +34,20 @@ pub enum XmbCommand {
         /// Input XMB file
         input: PathBuf,
     },
+    /// Batch convert all XMB/XML files in a directory (recursive)
+    Batch {
+        /// Input directory to scan
+        input: PathBuf,
+        /// Output format for XML→XMB conversion
+        #[arg(short, long, value_enum, default_value = "pc")]
+        format: FormatArg,
+        /// Disable compression for XML→XMB
+        #[arg(short = 'u', long = "no-compress")]
+        no_compress: bool,
+        /// Overwrite existing output files
+        #[arg(long)]
+        overwrite: bool,
+    },
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, ValueEnum)]
@@ -93,7 +107,59 @@ pub fn run(cmd: XmbCommand) -> Result<(), Box<dyn std::error::Error>> {
                 println!("(empty document)");
             }
         }
+
+        XmbCommand::Batch {
+            input,
+            format,
+            no_compress,
+            overwrite,
+        } => {
+            println!("Scanning {} for XMB/XML files...", input.display());
+            let files = collect_xmb_xml_files(&input)?;
+            if files.is_empty() {
+                println!("No XMB or XML files found.");
+                return Ok(());
+            }
+            println!("Found {} files", files.len());
+            let (success, errors) =
+                xmb::batch_convert(&files, format.into(), overwrite, !no_compress);
+            println!("Converted {} files", success);
+            if !errors.is_empty() {
+                eprintln!("{} errors:", errors.len());
+                for (file, err) in &errors {
+                    eprintln!("  {}: {}", file, err);
+                }
+            }
+        }
     }
 
+    Ok(())
+}
+
+fn collect_xmb_xml_files(
+    dir: &std::path::Path,
+) -> Result<Vec<PathBuf>, Box<dyn std::error::Error>> {
+    let mut files = Vec::new();
+    collect_recursive(dir, &mut files)?;
+    files.sort();
+    Ok(files)
+}
+
+fn collect_recursive(
+    dir: &std::path::Path,
+    files: &mut Vec<PathBuf>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    for entry in std::fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_dir() {
+            collect_recursive(&path, files)?;
+        } else if let Some(ext) = path.extension() {
+            let ext = ext.to_string_lossy().to_lowercase();
+            if ext == "xmb" || ext == "xml" {
+                files.push(path);
+            }
+        }
+    }
     Ok(())
 }
