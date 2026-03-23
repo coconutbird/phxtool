@@ -9,9 +9,12 @@ Built on top of [ensemble-formats](https://github.com/coconutbird/ensemble-forma
 | Format    | Operations                                  | Description                                          |
 | --------- | ------------------------------------------- | ---------------------------------------------------- |
 | **ERA**   | expand, build, list, info, decrypt, encrypt | Game archives with automatic XMB↔XML conversion      |
-| **XMB**   | to-xml, to-xmb, info                        | Binary XML format used throughout Halo Wars          |
+| **XMB**   | to-xml, to-xmb, info, batch                 | Binary XML format used throughout Halo Wars          |
 | **UGX**   | info, to-gltf, from-gltf                    | 3D model format with glTF import/export              |
 | **Wwise** | info, list, dump                            | PCK/BNK audio packages (sound banks, streaming WEMs) |
+| **ECF**   | info, expand, build                         | Generic container format (terrain, etc.)             |
+| **BDT**   | info, to-xml, to-bdt                        | BinaryDataTree format (.vis files)                   |
+| **GFX**   | info, to-swf, to-gfx, decompress            | Scaleform UI files (GFX↔SWF conversion)              |
 
 ## Building
 
@@ -33,6 +36,9 @@ Commands:
   xmb    XMB ↔ XML conversion
   ugx    UGX model operations
   wwise  Wwise audio operations
+  ecf    ECF container operations
+  bdt    BinaryDataTree operations
+  gfx    Scaleform GFX ↔ SWF operations
 ```
 
 ### ERA Archives
@@ -40,6 +46,10 @@ Commands:
 ```sh
 # Extract an ERA archive (auto-converts XMB → XML)
 phxtool era expand game.era
+
+# Extract with Scaleform processing
+phxtool era expand game.era --gfx-to-swf        # Convert GFX → SWF
+phxtool era expand game.era --decompress-ui      # Decompress Scaleform files
 
 # Rebuild from a directory (auto-converts XML → XMB, encrypts)
 phxtool era build extracted_dir/ -o game.era
@@ -63,6 +73,9 @@ phxtool xmb to-xml data.xmb
 
 # Convert XML back to XMB (PC format)
 phxtool xmb to-xmb data.xml
+
+# Batch convert all XMB/XML files in a directory tree
+phxtool xmb batch ./extracted_data/
 
 # Show XMB metadata
 phxtool xmb info data.xmb
@@ -104,22 +117,71 @@ phxtool wwise dump sounds.pck --id 0x1A2B3C4D
 phxtool wwise dump soundbank.bnk
 ```
 
+### ECF Containers
+
+```sh
+# Show ECF container info (chunks, sizes)
+phxtool ecf info terrain.xtd
+
+# Extract all chunks from an ECF file
+phxtool ecf expand terrain.xtd
+
+# Rebuild an ECF from extracted chunks
+phxtool ecf build chunks_dir/ -o terrain.xtd
+```
+
+### BinaryDataTree
+
+```sh
+# Convert BDT to XML
+phxtool bdt to-xml data.vis
+
+# Convert XML back to BDT
+phxtool bdt to-bdt data.xml
+
+# Show BDT info
+phxtool bdt info data.vis
+```
+
+### Scaleform GFX
+
+```sh
+# Convert GFX to SWF (for editing in JPEXS/FFDec)
+phxtool gfx to-swf ui_file.gfx
+
+# Convert SWF back to GFX
+phxtool gfx to-gfx ui_file.swf
+
+# Decompress a compressed Scaleform file
+phxtool gfx decompress ui_file.gfx
+
+# Show Scaleform file info
+phxtool gfx info ui_file.gfx
+```
+
 ## Project Structure
 
 ```
 crates/
-├── phxtool/          # Library — high-level operations
-│   ├── era_ops.rs    # ERA archive workflows
-│   ├── xmb_ops.rs    # XMB ↔ XML conversion
-│   ├── ugx_ops.rs    # UGX model operations
-│   ├── wwise_ops.rs  # Wwise PCK/BNK operations
-│   └── error.rs      # Unified error type
-└── phxtool-cli/      # CLI binary
-    ├── main.rs        # Entry point
-    ├── cmd_era.rs     # ERA subcommands
-    ├── cmd_xmb.rs     # XMB subcommands
-    ├── cmd_ugx.rs     # UGX subcommands
-    └── cmd_wwise.rs   # Wwise subcommands
+├── phxtool/              # Library — high-level operations
+│   └── src/ops/
+│       ├── era.rs        # ERA archive workflows
+│       ├── xmb.rs        # XMB ↔ XML conversion
+│       ├── ugx.rs        # UGX model operations
+│       ├── wwise.rs      # Wwise PCK/BNK operations
+│       ├── ecf.rs        # ECF container operations
+│       ├── bdt.rs        # BinaryDataTree operations
+│       ├── scaleform.rs  # Scaleform GFX↔SWF helpers
+│       └── util.rs       # Shared utilities
+└── phxtool-cli/          # CLI binary
+    └── src/commands/
+        ├── era.rs        # ERA subcommands
+        ├── xmb.rs        # XMB subcommands
+        ├── ugx.rs        # UGX subcommands
+        ├── wwise.rs      # Wwise subcommands
+        ├── ecf.rs        # ECF subcommands
+        ├── bdt.rs        # BDT subcommands
+        └── gfx.rs        # GFX subcommands
 ```
 
 ## Acknowledgments
