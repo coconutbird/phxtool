@@ -7,7 +7,11 @@ use std::fs;
 use std::io::BufReader;
 use std::path::Path;
 
-use era::{DecryptReader, EncryptWriter, Reader, TeaKeys, Writer};
+use era::{Reader, TeaKeys, Writer};
+use tiger::{Digest, Tiger};
+
+type DecryptReader<R> = era::crypto::decrypt::Reader<R>;
+type EncryptWriter<W> = era::crypto::encrypt::Writer<W>;
 
 use crate::{Error, Result};
 
@@ -25,6 +29,8 @@ pub struct ExpandOptions {
     pub decompress_ui: bool,
     /// Convert GFX files to SWF (header swap).
     pub gfx_to_swf: bool,
+    /// Skip hash/signature verification.
+    pub skip_verify: bool,
 }
 
 impl Default for ExpandOptions {
@@ -36,6 +42,7 @@ impl Default for ExpandOptions {
             filter: None,
             decompress_ui: false,
             gfx_to_swf: false,
+            skip_verify: false,
         }
     }
 }
@@ -44,7 +51,16 @@ impl Default for ExpandOptions {
 pub struct ExpandResult {
     pub files_extracted: usize,
     pub files_translated: usize,
+    pub files_verified: usize,
+    pub hash_failures: Vec<String>,
     pub errors: Vec<(String, String)>,
+}
+
+/// Result of a standalone verify operation.
+pub struct VerifyResult {
+    pub files_checked: usize,
+    pub hash_failures: Vec<String>,
+    pub signature_valid: Option<bool>,
 }
 
 /// Information about an ERA archive entry.
@@ -62,6 +78,8 @@ pub struct ArchiveInfo {
     pub total_decompressed: u64,
     pub ecf_magic: u32,
     pub archive_magic: u32,
+    pub has_signature: bool,
+    pub signature_size: usize,
 }
 
 /// Open an encrypted ERA file for reading.
@@ -115,6 +133,8 @@ pub fn info(path: &Path) -> Result<ArchiveInfo> {
         total_decompressed,
         ecf_magic: archive.ecf_header.magic,
         archive_magic: archive.archive_header.archive_magic,
+        has_signature: archive.has_signature(),
+        signature_size: archive.signature().len(),
     })
 }
 
@@ -133,6 +153,8 @@ pub fn expand(path: &Path, output: &Path, opts: &ExpandOptions) -> Result<Expand
     let mut result = ExpandResult {
         files_extracted: 0,
         files_translated: 0,
+        files_verified: 0,
+        hash_failures: Vec::new(),
         errors: Vec::new(),
     };
 
@@ -164,11 +186,46 @@ pub fn expand(path: &Path, output: &Path, opts: &ExpandOptions) -> Result<Expand
             continue;
         }
 
-        let data = match archive.read_entry(i) {
-            Ok(d) => d,
-            Err(e) => {
-                result.errors.push((filename, e.to_string()));
-                continue;
+        // Read compressed data and verify Tiger128 hash if enabled
+        let data: Vec<u8> = if !opts.skip_verify {
+            match archive.read_entry_compressed(i) {
+                Ok((compressed, _decomp_size, stored_hash)) => {
+                    // Verify Tiger128 hash of compressed data
+                    let hash = Tiger::digest(&compressed);
+                    let mut computed = [0u8; 16];
+                    computed.copy_from_slice(&hash[..16]);
+                    // Tiger outputs LE words; stored hashes use BE words
+                    computed[0..8].reverse();
+                    computed[8..16].reverse();
+                    if stored_hash != [0u8; 16] && computed != stored_hash {
+                        result.hash_failures.push(format!(
+                            "{}: expected {:02x?}, got {:02x?}",
+                            normalized, stored_hash, computed
+                        ));
+                    } else {
+                        result.files_verified += 1;
+                    }
+                    // Decompress
+                    match archive.entry(i).unwrap().decompress(&compressed) {
+                        Ok(d) => d,
+                        Err(e) => {
+                            result.errors.push((filename, e.to_string()));
+                            continue;
+                        }
+                    }
+                }
+                Err(e) => {
+                    result.errors.push((filename, e.to_string()));
+                    continue;
+                }
+            }
+        } else {
+            match archive.read_entry(i) {
+                Ok(d) => d,
+                Err(e) => {
+                    result.errors.push((filename, e.to_string()));
+                    continue;
+                }
             }
         };
 
@@ -385,6 +442,64 @@ pub fn encrypt(input: &Path, output: &Path) -> Result<()> {
         .finish()
         .map_err(|e| Error::Other(format!("encryption error: {}", e)))?;
     Ok(())
+}
+
+/// Verify all Tiger128 hashes and the archive signature without extracting.
+pub fn verify(path: &Path) -> Result<VerifyResult> {
+    let mut archive = open_era(path)?;
+
+    let mut vr = VerifyResult {
+        files_checked: 0,
+        hash_failures: Vec::new(),
+        signature_valid: None,
+    };
+
+    // Verify signature if present
+    if archive.has_signature() {
+        match archive.verify_signature() {
+            Ok(valid) => vr.signature_valid = Some(valid),
+            Err(_) => vr.signature_valid = Some(false),
+        }
+    }
+
+    // Verify Tiger128 hashes for all entries (including filename table at 0)
+    for i in 0..archive.len() {
+        let entry = archive.entry(i).unwrap().clone();
+        let name = entry.filename.as_deref().unwrap_or(if i == 0 {
+            "<filename table>"
+        } else {
+            "<unnamed>"
+        });
+
+        match archive.read_entry_compressed(i) {
+            Ok((compressed, _decomp_size, stored_hash)) => {
+                if stored_hash == [0u8; 16] {
+                    // No hash stored, skip
+                    vr.files_checked += 1;
+                    continue;
+                }
+                let hash = Tiger::digest(&compressed);
+                let mut computed = [0u8; 16];
+                computed.copy_from_slice(&hash[..16]);
+                // Tiger outputs LE words; stored hashes use BE words
+                computed[0..8].reverse();
+                computed[8..16].reverse();
+                if computed != stored_hash {
+                    vr.hash_failures.push(format!(
+                        "{}: expected {:02x?}, got {:02x?}",
+                        name, stored_hash, computed
+                    ));
+                }
+                vr.files_checked += 1;
+            }
+            Err(e) => {
+                vr.hash_failures
+                    .push(format!("{}: read error: {}", name, e));
+            }
+        }
+    }
+
+    Ok(vr)
 }
 
 // Re-export for backward compat

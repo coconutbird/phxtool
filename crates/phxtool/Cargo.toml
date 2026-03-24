@@ -15,3 +15,4 @@ thiserror = "2.0"
 glob = "0.3"
 pcktool = { git = "https://github.com/coconutbird/pcktool-rs.git", version = "0.1.0" }
 flate2 = "1.1.9"
+tiger = "0.2.1"

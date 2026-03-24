@@ -33,6 +33,9 @@ pub enum EraCommand {
         /// Convert GFX files to SWF (header swap)
         #[arg(long)]
         gfx_to_swf: bool,
+        /// Skip hash/signature verification
+        #[arg(long)]
+        skip_verify: bool,
     },
     /// Build an ERA archive from a directory
     Build {
@@ -74,6 +77,11 @@ pub enum EraCommand {
         #[arg(short, long)]
         output: PathBuf,
     },
+    /// Verify archive integrity (Tiger128 hashes + signature)
+    Verify {
+        /// Path to the ERA archive
+        file: PathBuf,
+    },
 }
 
 pub fn run(cmd: EraCommand) -> Result<(), Box<dyn std::error::Error>> {
@@ -87,6 +95,7 @@ pub fn run(cmd: EraCommand) -> Result<(), Box<dyn std::error::Error>> {
             listing_only,
             decompress_ui,
             gfx_to_swf,
+            skip_verify,
         } => {
             let outdir = output.unwrap_or_else(|| {
                 let stem = file.file_stem().unwrap_or_default();
@@ -100,6 +109,7 @@ pub fn run(cmd: EraCommand) -> Result<(), Box<dyn std::error::Error>> {
                 filter,
                 decompress_ui,
                 gfx_to_swf,
+                skip_verify,
             };
 
             println!("Expanding {} -> {}", file.display(), outdir.display());
@@ -109,6 +119,15 @@ pub fn run(cmd: EraCommand) -> Result<(), Box<dyn std::error::Error>> {
                 "Extracted {} files ({} XMB→XML translations)",
                 result.files_extracted, result.files_translated
             );
+            if !skip_verify {
+                println!("Verified {} file hashes", result.files_verified);
+            }
+            if !result.hash_failures.is_empty() {
+                eprintln!("{} hash failures:", result.hash_failures.len());
+                for msg in &result.hash_failures {
+                    eprintln!("  {}", msg);
+                }
+            }
             if !result.errors.is_empty() {
                 eprintln!("{} errors:", result.errors.len());
                 for (name, err) in &result.errors {
@@ -192,6 +211,11 @@ pub fn run(cmd: EraCommand) -> Result<(), Box<dyn std::error::Error>> {
                 let ratio = (info.total_compressed as f64 / info.total_decompressed as f64) * 100.0;
                 println!("  Ratio:        {:.1}%", ratio);
             }
+            if info.has_signature {
+                println!("  Signature:    {} bytes", info.signature_size);
+            } else {
+                println!("  Signature:    none");
+            }
         }
 
         EraCommand::Decrypt { input, output } => {
@@ -204,6 +228,28 @@ pub fn run(cmd: EraCommand) -> Result<(), Box<dyn std::error::Error>> {
             println!("Encrypting {} -> {}", input.display(), output.display());
             era::encrypt(&input, &output)?;
             println!("Done!");
+        }
+
+        EraCommand::Verify { file } => {
+            println!("Verifying {}...", file.display());
+            let vr = era::verify(&file)?;
+
+            println!("  Files checked: {}", vr.files_checked);
+
+            match vr.signature_valid {
+                Some(true) => println!("  Signature:     VALID"),
+                Some(false) => println!("  Signature:     INVALID"),
+                None => println!("  Signature:     not present"),
+            }
+
+            if vr.hash_failures.is_empty() {
+                println!("  Hashes:        all OK");
+            } else {
+                eprintln!("  {} hash failures:", vr.hash_failures.len());
+                for msg in &vr.hash_failures {
+                    eprintln!("    {}", msg);
+                }
+            }
         }
     }
 
