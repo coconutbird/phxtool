@@ -194,9 +194,6 @@ pub fn expand(path: &Path, output: &Path, opts: &ExpandOptions) -> Result<Expand
                     let hash = Tiger::digest(&compressed);
                     let mut computed = [0u8; 16];
                     computed.copy_from_slice(&hash[..16]);
-                    // Tiger outputs LE words; stored hashes use BE words
-                    computed[0..8].reverse();
-                    computed[8..16].reverse();
                     if stored_hash != [0u8; 16] && computed != stored_hash {
                         result.hash_failures.push(format!(
                             "{}: expected {:02x?}, got {:02x?}",
@@ -481,9 +478,6 @@ pub fn verify(path: &Path) -> Result<VerifyResult> {
                 let hash = Tiger::digest(&compressed);
                 let mut computed = [0u8; 16];
                 computed.copy_from_slice(&hash[..16]);
-                // Tiger outputs LE words; stored hashes use BE words
-                computed[0..8].reverse();
-                computed[8..16].reverse();
                 if computed != stored_hash {
                     vr.hash_failures.push(format!(
                         "{}: expected {:02x?}, got {:02x?}",
