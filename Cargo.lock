@@ -85,7 +85,7 @@ checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 [[package]]
 name = "bdt"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#c07294bbec87ba7465f8a4c731add1048d3ed8ad"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#044520238fa6d73adc1029307bd71a90a545c863"
 dependencies = [
  "hashbrown 0.16.1",
  "thiserror",
@@ -239,7 +239,7 @@ dependencies = [
 [[package]]
 name = "ddx"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#c07294bbec87ba7465f8a4c731add1048d3ed8ad"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#044520238fa6d73adc1029307bd71a90a545c863"
 dependencies = [
  "ecf",
  "miniz_oxide",
@@ -261,7 +261,7 @@ dependencies = [
 [[package]]
 name = "ecf"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#c07294bbec87ba7465f8a4c731add1048d3ed8ad"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#044520238fa6d73adc1029307bd71a90a545c863"
 dependencies = [
  "miniz_oxide",
  "thiserror",
@@ -283,7 +283,7 @@ checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
 [[package]]
 name = "era"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#c07294bbec87ba7465f8a4c731add1048d3ed8ad"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#044520238fa6d73adc1029307bd71a90a545c863"
 dependencies = [
  "ecf",
  "miniz_oxide",
@@ -542,6 +542,7 @@ dependencies = [
  "thiserror",
  "tiger",
  "ugx",
+ "ugx-gltf",
  "xmb",
  "xml",
 ]
@@ -741,18 +742,28 @@ checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
 [[package]]
 name = "ugx"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#c07294bbec87ba7465f8a4c731add1048d3ed8ad"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#044520238fa6d73adc1029307bd71a90a545c863"
+dependencies = [
+ "bdt",
+ "ecf",
+ "half",
+ "thiserror",
+ "zerocopy",
+]
+
+[[package]]
+name = "ugx-gltf"
+version = "0.1.0"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#044520238fa6d73adc1029307bd71a90a545c863"
 dependencies = [
  "base64 0.22.1",
- "bdt",
  "byteorder",
- "ecf",
  "gltf",
  "gltf-json",
  "half",
  "serde_json",
  "thiserror",
- "zerocopy",
+ "ugx",
 ]
 
 [[package]]
@@ -797,7 +808,7 @@ dependencies = [
 [[package]]
 name = "xmb"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#c07294bbec87ba7465f8a4c731add1048d3ed8ad"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#044520238fa6d73adc1029307bd71a90a545c863"
 dependencies = [
  "bdt",
  "ecf",
@@ -809,7 +820,7 @@ dependencies = [
 [[package]]
 name = "xml"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#c07294bbec87ba7465f8a4c731add1048d3ed8ad"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#044520238fa6d73adc1029307bd71a90a545c863"
 dependencies = [
  "xmlparser",
 ]
