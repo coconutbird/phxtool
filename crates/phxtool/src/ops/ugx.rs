@@ -91,8 +91,16 @@ pub fn to_gltf(input: &Path, output: &Path, opts: &ExportOptions) -> Result<()> 
     Ok(())
 }
 
+/// Re-export so CLI doesn't need a direct ugx dependency for the version enum.
+pub use ugx::UgxVersion;
+
 /// Convert a glTF/GLB file to UGX.
-pub fn from_gltf(input: &Path, output: &Path, include_skeleton: bool) -> Result<()> {
+pub fn from_gltf(
+    input: &Path,
+    output: &Path,
+    include_skeleton: bool,
+    version: UgxVersion,
+) -> Result<()> {
     let is_glb = input
         .extension()
         .is_some_and(|ext| ext.eq_ignore_ascii_case("glb"));
@@ -109,12 +117,13 @@ pub fn from_gltf(input: &Path, output: &Path, include_skeleton: bool) -> Result<
     let opts = GltfImportOptions {
         include_skeleton,
         include_materials: true,
+        version,
     };
 
     let geom = import_from_gltf(&json_str, buffer_data.as_deref(), &opts)
         .map_err(|e| Error::Other(e.to_string()))?;
 
-    let ugx_data = UgxWriter::write(&geom).map_err(|e| Error::Other(e.to_string()))?;
+    let ugx_data = UgxWriter::write(&geom, version).map_err(|e| Error::Other(e.to_string()))?;
     fs::write(output, &ugx_data)?;
     Ok(())
 }

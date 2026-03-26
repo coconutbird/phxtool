@@ -85,7 +85,7 @@ checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 [[package]]
 name = "bdt"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#044520238fa6d73adc1029307bd71a90a545c863"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#843f8e55f51f7a972a78d9e6308335c3c4e9d392"
 dependencies = [
  "hashbrown 0.16.1",
  "thiserror",
@@ -239,7 +239,7 @@ dependencies = [
 [[package]]
 name = "ddx"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#044520238fa6d73adc1029307bd71a90a545c863"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#843f8e55f51f7a972a78d9e6308335c3c4e9d392"
 dependencies = [
  "ecf",
  "miniz_oxide",
@@ -261,9 +261,10 @@ dependencies = [
 [[package]]
 name = "ecf"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#044520238fa6d73adc1029307bd71a90a545c863"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#843f8e55f51f7a972a78d9e6308335c3c4e9d392"
 dependencies = [
  "miniz_oxide",
+ "nostdio",
  "thiserror",
  "zerocopy",
 ]
@@ -283,7 +284,7 @@ checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
 [[package]]
 name = "era"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#044520238fa6d73adc1029307bd71a90a545c863"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#843f8e55f51f7a972a78d9e6308335c3c4e9d392"
 dependencies = [
  "ecf",
  "miniz_oxide",
@@ -497,6 +498,11 @@ dependencies = [
  "num-traits",
  "pxfm",
 ]
+
+[[package]]
+name = "nostdio"
+version = "0.1.0"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#843f8e55f51f7a972a78d9e6308335c3c4e9d392"
 
 [[package]]
 name = "num-traits"
@@ -742,7 +748,7 @@ checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
 [[package]]
 name = "ugx"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#044520238fa6d73adc1029307bd71a90a545c863"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#843f8e55f51f7a972a78d9e6308335c3c4e9d392"
 dependencies = [
  "bdt",
  "ecf",
@@ -754,7 +760,7 @@ dependencies = [
 [[package]]
 name = "ugx-gltf"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#044520238fa6d73adc1029307bd71a90a545c863"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#843f8e55f51f7a972a78d9e6308335c3c4e9d392"
 dependencies = [
  "base64 0.22.1",
  "byteorder",
@@ -808,7 +814,7 @@ dependencies = [
 [[package]]
 name = "xmb"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#044520238fa6d73adc1029307bd71a90a545c863"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#843f8e55f51f7a972a78d9e6308335c3c4e9d392"
 dependencies = [
  "bdt",
  "ecf",
@@ -820,7 +826,7 @@ dependencies = [
 [[package]]
 name = "xml"
 version = "0.1.0"
-source = "git+https://github.com/coconutbird/ensemble-formats.git#044520238fa6d73adc1029307bd71a90a545c863"
+source = "git+https://github.com/coconutbird/ensemble-formats.git#843f8e55f51f7a972a78d9e6308335c3c4e9d392"
 dependencies = [
  "xmlparser",
 ]
@@ -865,9 +871,9 @@ checksum = "cb8a0807f7c01457d0379ba880ba6322660448ddebc890ce29bb64da71fb40f9"
 
 [[package]]
 name = "zune-jpeg"
-version = "0.5.14"
+version = "0.5.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b7a1c0af6e5d8d1363f4994b7a091ccf963d8b694f7da5b0b9cceb82da2c0a6"
+checksum = "27bc9d5b815bc103f142aa054f561d9187d191692ec7c2d1e2b4737f8dbd7296"
 dependencies = [
  "zune-core",
 ]

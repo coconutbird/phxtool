@@ -2,8 +2,27 @@
 
 use std::path::PathBuf;
 
-use clap::Subcommand;
+use clap::{Subcommand, ValueEnum};
 use phxtool::ops::ugx;
+use phxtool::ops::ugx::UgxVersion;
+
+/// CLI-facing UGX version selector.
+#[derive(Clone, Copy, ValueEnum)]
+pub enum UgxVersionArg {
+    /// Halo Wars: Definitive Edition
+    Hw1,
+    /// Halo Wars 2 (default)
+    Hw2,
+}
+
+impl From<UgxVersionArg> for UgxVersion {
+    fn from(v: UgxVersionArg) -> Self {
+        match v {
+            UgxVersionArg::Hw1 => UgxVersion::Hw1,
+            UgxVersionArg::Hw2 => UgxVersion::Hw2,
+        }
+    }
+}
 
 #[derive(Subcommand)]
 pub enum UgxCommand {
@@ -36,6 +55,9 @@ pub enum UgxCommand {
         /// Exclude skeleton/bones from import
         #[arg(long)]
         no_skeleton: bool,
+        /// Target UGX version: hw1 (Halo Wars: DE, default) or hw2 (Halo Wars 2)
+        #[arg(long, value_enum, default_value = "hw1")]
+        version: UgxVersionArg,
     },
 }
 
@@ -70,9 +92,10 @@ pub fn run(cmd: UgxCommand) -> Result<(), Box<dyn std::error::Error>> {
             input,
             output,
             no_skeleton,
+            version,
         } => {
             println!("Converting {} -> {}", input.display(), output.display());
-            ugx::from_gltf(&input, &output, !no_skeleton)?;
+            ugx::from_gltf(&input, &output, !no_skeleton, version.into())?;
             println!("Done!");
         }
     }
