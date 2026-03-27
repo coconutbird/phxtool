@@ -59,6 +59,14 @@ pub enum UgxCommand {
         #[arg(long, value_enum, default_value = "hw1")]
         version: UgxVersionArg,
     },
+    /// Round-trip: read UGX → glTF → UGX (preserves original version)
+    Roundtrip {
+        /// Input UGX file
+        input: PathBuf,
+        /// Output UGX file (defaults to overwriting input)
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+    },
 }
 
 pub fn run(cmd: UgxCommand) -> Result<(), Box<dyn std::error::Error>> {
@@ -96,6 +104,13 @@ pub fn run(cmd: UgxCommand) -> Result<(), Box<dyn std::error::Error>> {
         } => {
             println!("Converting {} -> {}", input.display(), output.display());
             ugx::from_gltf(&input, &output, !no_skeleton, version.into())?;
+            println!("Done!");
+        }
+
+        UgxCommand::Roundtrip { input, output } => {
+            let out = output.as_deref().unwrap_or(&input);
+            println!("Round-tripping {} -> {}", input.display(), out.display());
+            ugx::roundtrip(&input, out)?;
             println!("Done!");
         }
     }

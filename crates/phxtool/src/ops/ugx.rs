@@ -10,6 +10,26 @@ use ugx_gltf::{
 
 use crate::{Error, Result};
 
+/// Detect the UGX version from raw file bytes by reading the geom header signature
+/// in the ECF cached-data chunk (0x700).
+pub fn detect_version(data: &[u8]) -> Result<UgxVersion> {
+    let ecf = ecf::Reader::new(data).map_err(|e| Error::Other(e.to_string()))?;
+    let cached = ecf
+        .chunk_data_by_id(0x700)
+        .map_err(|_| Error::Other("missing cached data chunk (0x700)".into()))?;
+    if cached.len() < 4 {
+        return Err(Error::Other("cached data chunk too small".into()));
+    }
+    let sig = u32::from_le_bytes([cached[0], cached[1], cached[2], cached[3]]);
+    if sig == UgxVersion::Hw1.signature() {
+        Ok(UgxVersion::Hw1)
+    } else if sig == UgxVersion::Hw2.signature() {
+        Ok(UgxVersion::Hw2)
+    } else {
+        Err(Error::Other(format!("unknown UGX signature: 0x{sig:08X}")))
+    }
+}
+
 /// Information about a UGX model.
 pub struct UgxInfo {
     pub materials: usize,
@@ -124,6 +144,46 @@ pub fn from_gltf(
         .map_err(|e| Error::Other(e.to_string()))?;
 
     let ugx_data = UgxWriter::write(&geom, version).map_err(|e| Error::Other(e.to_string()))?;
+    fs::write(output, &ugx_data)?;
+    Ok(())
+}
+
+/// Round-trip a UGX file: read → export to glTF → re-import → write back.
+///
+/// The original UGX version is detected automatically and preserved.
+pub fn roundtrip(input: &Path, output: &Path) -> Result<()> {
+    let data = fs::read(input).map_err(|e| {
+        if e.kind() == std::io::ErrorKind::NotFound {
+            Error::FileNotFound(input.to_path_buf())
+        } else {
+            Error::Io(e)
+        }
+    })?;
+
+    let version = detect_version(&data)?;
+    let geom = UgxReader::read(&data).map_err(|e| Error::Other(e.to_string()))?;
+
+    // Export to glTF (in-memory)
+    let export_opts = GltfExportOptions {
+        embed_buffers: true,
+        include_materials: true,
+        include_skeleton: true,
+    };
+    let export = export_to_gltf_with_buffer_name(&geom, &export_opts, "buffer.bin")
+        .map_err(|e| Error::Other(e.to_string()))?;
+
+    // Re-import from glTF
+    let import_opts = GltfImportOptions {
+        include_skeleton: true,
+        include_materials: true,
+        version,
+    };
+    let reimported = import_from_gltf(&export.json, export.buffer.as_deref(), &import_opts)
+        .map_err(|e| Error::Other(e.to_string()))?;
+
+    // Write back with the same version
+    let ugx_data =
+        UgxWriter::write(&reimported, version).map_err(|e| Error::Other(e.to_string()))?;
     fs::write(output, &ugx_data)?;
     Ok(())
 }
